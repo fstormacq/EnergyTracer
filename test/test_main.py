@@ -148,6 +148,19 @@ def test_run_profiling_with_keyboard_interrupt(
 
 
 @pytest.mark.unit
+@patch("src.main.parse_arguments")
+@patch("src.main.clean_artifacts")
+def test_cli_clean_invokes_cleaner(mock_clean_artifacts, mock_parse, monkeypatch):
+    mock_parse.return_value = MagicMock(clean=True, verbose=False)
+    mock_clean_artifacts.return_value = 0
+    monkeypatch.setattr("sys.platform", "darwin")
+
+    assert cli() == 0
+
+    mock_clean_artifacts.assert_called_once_with(verbose=False)
+
+
+@pytest.mark.unit
 @pytest.mark.parametrize("profiler", ["mac", "carbon"])
 @patch("src.main.parse_arguments")
 def test_cli_with_profilers_on_darwin(mock_parse, monkeypatch, profiler):
