@@ -6,6 +6,7 @@ from . import log
 
 # Artifacts that will be cleaned
 ARTIFACTS_TO_CLEAN = [
+    "output",
     "htmlcov",
     ".pytest_cache",
     ".ruff_cache",
@@ -40,10 +41,12 @@ def get_path_size(path):
     return total_size
 
 
-def get_artifacts_to_remove():
+def get_artifacts_to_remove(delete_output=True):
     """Get list of existing artifacts that can be removed with their sizes."""
     existing_artifacts = []
     for artifact in ARTIFACTS_TO_CLEAN:
+        if artifact == "output" and not delete_output:
+            continue
         artifact_path = Path(artifact)
         if artifact_path.exists():
             size = get_path_size(artifact_path)
@@ -66,29 +69,51 @@ def display_cleanup_preview(artifacts):
         total_size += size
 
     total_str = format_size(total_size)
-    log.header(f"Total space to free: {total_str}")
+
+    print()
+    log.info(f"Total space to free: {total_str}")
     print()
     return True
 
 
 def confirm_cleanup():
     """Prompt user for confirmation before cleaning."""
-    response = input("Do you want to proceed with cleanup? [y/N]: ").strip().lower()
+    log.header("Confirm Cleanup")
+    log.warn(
+        "This action is IRREVERSIBLE and will PERMANENTLY delete the listed artifacts."
+    )
+
+    print()
+    response = input("  Do you want to proceed with cleanup? [y/N]: ").strip().lower()
+
+    return response == "y"
+
+
+def confirm_delete_output():
+    """Prompt user to decide whether the output folder should be removed."""
+    log.header("Decide whether to remove the 'output' folder:")
+    response = input("  Delete the output folder too? [y/N]: ").strip().lower()
     return response == "y"
 
 
 def clean_artifacts(verbose=False):
     """Remove generated artifacts including output, coverage, and cache directories."""
-    artifacts = get_artifacts_to_remove()
+    delete_output = True
+
+    if Path("output").exists():
+        delete_output = confirm_delete_output()
+
+    artifacts = get_artifacts_to_remove(delete_output=delete_output)
 
     # Display preview of what will be removed
     if not display_cleanup_preview(artifacts):
         if verbose:
-            log.dim("Cleanup cancelled - no artifacts found.")
+            log.debug("Cleanup cancelled - no artifacts found.")
         return 0
 
     # Request confirmation
     if not confirm_cleanup():
+        print()
         log.warn("Cleanup cancelled by user.")
         print()
         return 0
@@ -114,6 +139,8 @@ def clean_artifacts(verbose=False):
 
     if removed_count > 0:
         freed_str = format_size(total_freed)
+
+        print()
         log.ok(
             f"Cleanup completed: {removed_count} artifact(s) removed ({freed_str} freed)."
         )
