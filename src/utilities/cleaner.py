@@ -107,7 +107,8 @@ def clean_artifacts(verbose=False):
 
     # Display preview of what will be removed
     if not display_cleanup_preview(artifacts):
-        log.error("Cleanup cancelled - no artifacts found.")
+        if verbose:
+            log.debug("Cleanup cancelled - no artifacts found.")
         return 0
 
     # Request confirmation
