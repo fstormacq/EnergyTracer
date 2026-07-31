@@ -71,7 +71,7 @@ def parse_main_arguments():
     parser.add_argument(
         "--clean",
         action="store_true",
-        help="Remove generated artifacts (output, htmlcov, caches) instead of running profiling.",
+        help="Remove generated artifacts (output (optional), htmlcov, caches) instead of running profiling.",
     )
 
     return parser.parse_args()

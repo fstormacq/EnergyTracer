@@ -113,6 +113,7 @@ uv run -m src.main
 | `-o`, `--output-dir` | Directory to save generated plots and CSV files | `output` |
 | `--shuffle` | Randomize execution order of code variants to mitigate temporal effects | off |
 | `-v`, `--verbose` | Enable verbose output during profiling | off |
+| `--clean` | Permanently remove generated artifacts | off |
 
 ### Supported Languages
 
